@@ -1,5 +1,13 @@
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>EligeDepa | Comparador de departamentos en Lima</title>
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#0f766e">
+<link rel="icon" href="/icons/icon-192.png">
+<link rel="apple-touch-icon" href="/icons/icon-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="EligeDepa">
 <meta name="description" content="Compara departamentos en venta en Lima según lo que a ti te importa: precio, cercanía a parques, transporte y trabajo. 943 proyectos reales, sin caja negra.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://eligedepa.com">
@@ -1211,5 +1219,10 @@ if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
 }
 
 render();
+</script>
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js'));
+  }
 </script>
 
