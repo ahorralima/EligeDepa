@@ -250,6 +250,12 @@
   .links { margin-top: 12px; font-size: 0.82rem; }
   .links a { color: var(--ink); text-decoration:none; margin-right: 16px; font-weight:600; }
   .links a:hover { text-decoration: underline; }
+  .btn-favorite {
+    color: var(--ink); background: none; border: 1px solid var(--border); border-radius: 999px;
+    font-weight: 600; font-size: 0.82rem; padding: 5px 14px; margin-right: 16px; cursor: pointer;
+    font-family: inherit;
+  }
+  .btn-favorite:disabled { color: var(--green); border-color: var(--green-bg); background: var(--green-bg); cursor: default; }
 
   .badge-estado { display:inline-block; font-size: 0.7rem; padding: 3px 9px; border-radius: 999px;
                   background: var(--accent-soft-bg); color: var(--ink); border: 1px solid var(--accent-soft-border); font-weight: 600; }
@@ -826,15 +832,21 @@ function reasonText(idx, parts, isFallback) {
 }
 
 function mapsViewLink(l) {
+  const name = encodeURIComponent(l.proyecto || 'Departamento');
+  if (l.lat != null && l.lon != null) {
+    return `https://maps.apple.com/?q=${name}&ll=${l.lat},${l.lon}`;
+  }
   const q = encodeURIComponent(l.direccion + ', ' + l.distrito + ', Lima, Peru');
-  return `https://www.google.com/maps/search/?api=1&query=${q}`;
+  return `https://maps.apple.com/?q=${q}`;
 }
 
 function workDirectionsLink(l) {
   if (!trabajoLoc) return null;
   const origin = `${trabajoLoc.lat},${trabajoLoc.lon}`;
-  const destination = encodeURIComponent(l.direccion + ', ' + l.distrito + ', Lima, Peru');
-  return `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination}`;
+  const destination = (l.lat != null && l.lon != null)
+    ? `${l.lat},${l.lon}`
+    : encodeURIComponent(l.direccion + ', ' + l.distrito + ', Lima, Peru');
+  return `https://maps.apple.com/?saddr=${origin}&daddr=${destination}&dirflg=d`;
 }
 
 function updateRangeSlider(prefix, mainFmt, subFmt) {
@@ -1110,6 +1122,7 @@ function renderCards(scored, container, isFallback) {
         <a href="${l.link}">Ver en ${l.fuente || "Nexo"} →</a>
         <a href="${mapsViewLink(l)}">Ver ubicación en Maps →</a>
         ${dirLink ? `<a href="${dirLink}">Ver ruta desde tu trabajo →</a>` : ''}
+        <button type="button" class="btn-favorite" data-fav="${encodeURIComponent(JSON.stringify({link:l.link, proyecto:l.proyecto, distrito:l.distrito, precioPen:l.precioPen, m2:l.m2, dorm:l.dorm, imagen:l.imagen||''}))}">☆ Guardar</button>
       </div>
     `;
     container.appendChild(card);
@@ -1138,6 +1151,19 @@ function linkNumberToRange(prefix, side) {
   linkNumberToRange(prefix, 'hasta');
 });
 document.querySelectorAll('.chk-banco, .chk-area, .chk-distrito').forEach(c => c.addEventListener('change', render));
+
+document.addEventListener('click', e => {
+  const btn = e.target.closest('.btn-favorite');
+  if (!btn) return;
+  const payload = JSON.parse(decodeURIComponent(btn.dataset.fav));
+  if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.favorite) {
+    window.webkit.messageHandlers.favorite.postMessage(JSON.stringify(payload));
+    btn.textContent = '✓ Guardado';
+    btn.disabled = true;
+  } else {
+    alert('Para guardar favoritos y verlos sin conexión, abre EligeDepa desde la app (disponible en la App Store).');
+  }
+});
 weightIds.forEach(id => document.getElementById('w-' + id).addEventListener('input', render));
 
 document.getElementById('btn-buscar').addEventListener('click', () => {
